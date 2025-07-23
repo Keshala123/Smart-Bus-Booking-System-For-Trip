@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
-
+import { FaMapMarkerAlt, FaUser, FaPhone, FaCalendarAlt } from "react-icons/fa";
 
 const BookingForm = () => {
   const [tripType, setTripType] = useState("one-way");
@@ -11,7 +11,6 @@ const BookingForm = () => {
   const [to, setTo] = useState("");
   const [name, setName] = useState("");
   const [number, setNumber] = useState("");
-  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,17 +30,12 @@ const BookingForm = () => {
       status: "Waiting",
     };
     try {
-      await axios.post(
-        "http://localhost:5000/api/booking/create",
-        bookingData,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
+      await axios.post("http://localhost:5000/api/booking/create", bookingData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
       alert("Booking request submitted!");
-      // Optionally clear form
       setTripType("one-way");
       setSelectedDate(null);
       setFrom("");
@@ -49,165 +43,118 @@ const BookingForm = () => {
       setName("");
       setNumber("");
     } catch (err) {
-      alert(
-        "Booking failed: " +
-          (err.response?.data?.message || "Please try again later.")
-      );
+      if (err.response?.status === 401) {
+        alert("Session expired. Please log in again.");
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+      } else {
+        alert("Booking failed: " + (err.response?.data?.message || "Please try again later."));
+      }
     }
   };
 
   return (
     <form
       onSubmit={handleSubmit}
-      style={{
-        maxWidth: 500,
-        margin: "40px auto",
-        padding: 24,
-        borderRadius: 16,
-        boxShadow: "0 6px 24px rgba(0,0,0,0.08)",
-        background: "#fff",
-      }}
+      className="max-w-4xl mx-auto mt-12 p-8 rounded-3xl bg-white/30 backdrop-blur-lg shadow-2xl border border-white/20 animate-fade-in"
     >
-      <h2 style={{ textAlign: "center", fontSize: 28, marginBottom: 24 }}>
+      <h2 className="text-4xl font-bold text-center text-indigo-600 mb-8 col-span-full">
         Book Your Journey
       </h2>
 
       {/* Trip Type */}
-      <div style={{ marginBottom: 20, display: "flex", gap: 24 }}>
-        <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+      <div className="col-span-full flex justify-center gap-8 mb-6">
+        {["one-way", "round-trip"].map((type) => (
+          <label key={type} className="flex items-center gap-2 cursor-pointer text-gray-800 font-medium">
+            <input
+              type="radio"
+              name="tripType"
+              value={type}
+              checked={tripType === type}
+              onChange={() => setTripType(type)}
+              className="accent-indigo-600 w-5 h-5"
+            />
+            {type === "one-way" ? "One Way" : "Round Trip"}
+          </label>
+        ))}
+      </div>
+
+      {/* Form Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* From */}
+        <div className="relative">
+          <span className="absolute top-3.5 left-4 text-indigo-500"><FaMapMarkerAlt /></span>
           <input
-            type="radio"
-            name="tripType"
-            value="one-way"
-            checked={tripType === "one-way"}
-            onChange={() => setTripType("one-way")}
-            style={{ marginRight: 8, accentColor: "#6366f1" }}
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
+            placeholder="From"
+            required
+            className="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 outline-none text-gray-800 bg-white shadow-sm"
           />
-          <span style={{ fontWeight: 500 }}>One way</span>
-        </label>
-        <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+        </div>
+
+        {/* To */}
+        <div className="relative">
+          <span className="absolute top-3.5 left-4 text-indigo-500"><FaMapMarkerAlt /></span>
           <input
-            type="radio"
-            name="tripType"
-            value="round-trip"
-            checked={tripType === "round-trip"}
-            onChange={() => setTripType("round-trip")}
-            style={{ marginRight: 8, accentColor: "#6366f1" }}
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
+            placeholder="To"
+            required
+            className="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 outline-none text-gray-800 bg-white shadow-sm"
           />
-          <span style={{ fontWeight: 500 }}>Round trip</span>
-        </label>
+        </div>
+
+        {/* Name */}
+        <div className="relative">
+          <span className="absolute top-3.5 left-4 text-indigo-500"><FaUser /></span>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Full Name"
+            required
+            className="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 outline-none text-gray-800 bg-white shadow-sm"
+          />
+        </div>
+
+        {/* Number */}
+        <div className="relative">
+          <span className="absolute top-3.5 left-4 text-indigo-500"><FaPhone /></span>
+          <input
+            value={number}
+            onChange={(e) => setNumber(e.target.value)}
+            placeholder="Phone Number"
+            required
+            className="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 outline-none text-gray-800 bg-white shadow-sm"
+          />
+        </div>
+
+        {/* Date Picker (Full Width) */}
+        <div className="relative md:col-span-2">
+          <span className="absolute top-3.5 left-4 text-indigo-500">
+            <FaCalendarAlt />
+          </span>
+          <DatePicker
+            selected={selectedDate}
+            onChange={(date) => setSelectedDate(date)}
+            placeholderText="Select a date"
+            dateFormat="EEE, MMM d"
+            minDate={new Date()}
+            required
+            className="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 outline-none text-gray-800 bg-white shadow-sm"
+          />
+        </div>
       </div>
 
-      {/* From */}
-      <div style={{ marginBottom: 16 }}>
-        <input
-          value={from}
-          onChange={(e) => setFrom(e.target.value)}
-          placeholder="From"
-          required
-          style={{
-            width: "100%",
-            padding: "10px 14px",
-            borderRadius: 8,
-            border: "1px solid #ddd",
-            fontSize: 16,
-            marginBottom: 4,
-          }}
-        />
+      {/* Submit Button (Full Width) */}
+      <div className="mt-8">
+        <button
+          type="submit"
+          className="w-full bg-gradient-to-r from-indigo-500 to-indigo-700 hover:from-indigo-600 hover:to-indigo-800 transition text-white font-semibold py-3 rounded-lg shadow-lg"
+        >
+          Book Now
+        </button>
       </div>
-
-      {/* To */}
-      <div style={{ marginBottom: 16 }}>
-        <input
-          value={to}
-          onChange={(e) => setTo(e.target.value)}
-          placeholder="To"
-          required
-          style={{
-            width: "100%",
-            padding: "10px 14px",
-            borderRadius: 8,
-            border: "1px solid #ddd",
-            fontSize: 16,
-            marginBottom: 4,
-          }}
-        />
-      </div>
-
-      {/* Date Picker */}
-      <div style={{ marginBottom: 16 }}>
-        <DatePicker
-          selected={selectedDate}
-          onChange={(date) => setSelectedDate(date)}
-          placeholderText="Select a date"
-          dateFormat="EEE, MMM d"
-          minDate={new Date()}
-          required
-          style={{
-            width: "100%",
-            padding: "10px 14px",
-            borderRadius: 8,
-            border: "1px solid #ddd",
-            fontSize: 16,
-          }}
-          className="react-datepicker__input-text"
-        />
-      </div>
-
-  {      /* Name */  }
-      
-     <div style={{ marginBottom: 16 }}>
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Name"
-          required
-          style={{
-            width: "100%",
-            padding: "10px 14px",
-            borderRadius: 8,
-            border: "1px solid #ddd",
-            fontSize: 16,
-            marginBottom: 4,
-          }}
-        />
-      </div>
-
-      {/* Number */}
-      <div style={{ marginBottom: 16 }}>
-        <input
-          value={number}
-          onChange={(e) => setNumber(e.target.value)}
-          placeholder="Number"
-          required
-          style={{
-            width: "100%",
-            padding: "10px 14px",
-            borderRadius: 8,
-            border: "1px solid #ddd",
-            fontSize: 16,
-            marginBottom: 4,
-          }}
-        />
-      </div>
-
-      <button
-        type="submit"
-        style={{
-          width: "100%",
-          background: "#6366f1",
-          color: "#fff",
-          fontWeight: 600,
-          padding: "12px 0",
-          borderRadius: 8,
-          border: "none",
-          fontSize: 18,
-          cursor: "pointer",
-          transition: "background 0.2s",
-        }}
-      >
-        Book Now
-      </button>
     </form>
   );
 };

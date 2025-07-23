@@ -13,7 +13,8 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // User state
+  const [collapsed, setCollapsed] = useState(false);
+
   const [user, setUser] = useState({
     fullName: "",
     email: "",
@@ -21,7 +22,6 @@ const Sidebar = () => {
   });
 
   useEffect(() => {
-    // Fetch user profile on mount
     const fetchUser = async () => {
       try {
         const res = await axios.get("http://localhost:5000/api/auth/me", {
@@ -35,10 +35,16 @@ const Sidebar = () => {
           phone: res.data.phone,
         });
       } catch (err) {
-        alert(
-          "Failed to fetch user profile: " + (err.response?.data?.message || "Please try again later.")
-        );
-        // Handle error or redirect to login if unauthorized
+        if (err.response?.status === 401) {
+          alert("Session expired. Please log in again.");
+          localStorage.removeItem("token");
+          navigate("/login");
+        } else {
+          alert(
+            "Failed to fetch user profile: " +
+              (err.response?.data?.message || "Please try again later.")
+          );
+        }
       }
     };
     fetchUser();
@@ -57,77 +63,134 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="w-64 h-screen bg-white/70 backdrop-blur-md border-r border-gray-200 shadow-2xl p-6 flex flex-col justify-between transition-all duration-300">
-      {/* Header - Profile */}
-      <div>
-        <div className="flex items-center space-x-4 mb-10">
-          <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-md">
-            {user.fullName ? user.fullName[0].toUpperCase() : "U"}
-          </div>
-          <div>
-            <h1 className="text-xl font-extrabold text-indigo-700 tracking-wide">
+    <aside
+      className={`flex flex-col bg-white/95 backdrop-blur-md border-r border-indigo-200 shadow-xl transition-all duration-500 ease-in-out ${
+        collapsed ? "w-20" : "w-64"
+      } h-screen relative`}
+    >
+      {/* Toggle button */}
+      <button
+        onClick={() => setCollapsed((prev) => !prev)}
+        aria-label="Toggle Sidebar"
+        className="absolute -right-4 top-8 z-50 bg-indigo-600 p-2 rounded-full shadow-lg text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
+      >
+        <svg
+          className={`w-5 h-5 transform transition-transform duration-300 ${
+            collapsed ? "rotate-180" : ""
+          }`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+
+      {/* Profile */}
+      <div className="mt-10 px-5 mb-10 flex items-center gap-4">
+        <div
+          className={`w-14 h-14 bg-gradient-to-tr from-indigo-600 to-indigo-400
+            rounded-3xl flex items-center justify-center text-white font-extrabold text-3xl shadow-lg transition-transform ${
+              collapsed ? "scale-90" : "scale-100"
+            }`}
+        >
+          {user.fullName ? user.fullName[0].toUpperCase() : "U"}
+        </div>
+
+        {!collapsed && (
+          <div className="truncate">
+            <h1 className="text-2xl font-extrabold text-indigo-900 truncate">
               {user.fullName || "User"}
             </h1>
-            <p className="text-xs text-gray-400 mt-1">{user.email}</p>
+            <p className="text-sm text-indigo-600 truncate">{user.email}</p>
           </div>
-        </div>
-
-        {/* Main Menu */}
-        <div className="space-y-6">
-          <div>
-            <h4 className="text-sm text-gray-500 uppercase tracking-wider mb-2">Menu</h4>
-            <ul className="space-y-2">
-              {navItems.map(({ label, path, icon: Icon }) => (
-                <li
-                  key={path}
-                  className={`flex items-center gap-3 px-4 py-2 rounded-xl font-medium text-sm transition-all duration-300 cursor-pointer ${
-                    isActive(path)
-                      ? "bg-indigo-600 text-white shadow-md scale-[1.02]"
-                      : "text-gray-600 hover:bg-indigo-100 hover:text-indigo-700"
-                  }`}
-                  onClick={() => navigate(path)}
-                >
-                  <Icon size={18} />
-                  <span>{label}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-sm text-gray-500 uppercase tracking-wider mb-2">Others</h4>
-            <ul className="space-y-2">
-              {otherItems.map(({ label, path, icon: Icon }) => (
-                <li
-                  key={path}
-                  className={`flex items-center gap-3 px-4 py-2 rounded-xl font-medium text-sm transition-all duration-300 cursor-pointer ${
-                    isActive(path)
-                      ? "bg-indigo-600 text-white shadow-md scale-[1.02]"
-                      : "text-gray-600 hover:bg-indigo-100 hover:text-indigo-700"
-                  }`}
-                  onClick={() => navigate(path)}
-                >
-                  <Icon size={18} />
-                  <span>{label}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
+        )}
       </div>
 
-      {/* Exit Button */}
-      <div
-        className="flex items-center gap-3 px-4 py-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition-all duration-300 cursor-pointer font-medium text-sm shadow-sm hover:scale-[1.02]"
-        onClick={() => {
-          localStorage.removeItem("token");
-          // Optionally remove userId, etc.
-          navigate("/login");
-        }}
-      >
-        <LogOut size={18} />
-        <span>Exit</span>
+      {/* Navigation */}
+      <nav className="flex-1 px-3">
+        {!collapsed && (
+          <h4 className="text-xs text-indigo-400 uppercase tracking-widest mb-3 font-semibold pl-2">
+            Menu
+          </h4>
+        )}
+        <ul className="space-y-3">
+          {navItems.map(({ label, path, icon: Icon }) => (
+            <li key={path} className="relative group">
+              <div
+                onClick={() => navigate(path)}
+                className={`flex items-center gap-4 px-5 py-3 rounded-2xl text-sm font-semibold cursor-pointer transition-all select-none ${
+                  isActive(path)
+                    ? "bg-indigo-600 text-white shadow-lg scale-105"
+                    : "text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 hover:shadow-md"
+                }`}
+              >
+                <Icon
+                  size={20}
+                  className={`transition-transform duration-300 group-hover:animate-bounce ${
+                    isActive(path) ? "text-white" : "text-indigo-600"
+                  }`}
+                />
+                {!collapsed && <span>{label}</span>}
+              </div>
+              {collapsed && (
+                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 whitespace-nowrap rounded-md bg-gray-900 text-white px-3 py-1 text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50">
+                  {label}
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+
+        {!collapsed && (
+          <h4 className="text-xs text-indigo-400 uppercase tracking-widest mt-8 mb-3 font-semibold pl-2">
+            Others
+          </h4>
+        )}
+        <ul className="space-y-3">
+          {otherItems.map(({ label, path, icon: Icon }) => (
+            <li key={path} className="relative group">
+              <div
+                onClick={() => navigate(path)}
+                className={`flex items-center gap-4 px-5 py-3 rounded-2xl text-sm font-semibold cursor-pointer transition-all select-none ${
+                  isActive(path)
+                    ? "bg-indigo-600 text-white shadow-lg scale-105"
+                    : "text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 hover:shadow-md"
+                }`}
+              >
+                <Icon
+                  size={20}
+                  className={`transition-transform duration-300 group-hover:animate-bounce ${
+                    isActive(path) ? "text-white" : "text-indigo-600"
+                  }`}
+                />
+                {!collapsed && <span>{label}</span>}
+              </div>
+              {collapsed && (
+                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 whitespace-nowrap rounded-md bg-gray-900 text-white px-3 py-1 text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50">
+                  {label}
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      {/* Logout */}
+      <div className="mb-8 px-5">
+        <button
+          onClick={() => {
+            localStorage.removeItem("token");
+            navigate("/login");
+          }}
+          className="flex items-center justify-center gap-3 w-full rounded-2xl bg-red-100 text-red-600 hover:bg-red-200 shadow-md py-3 text-sm font-semibold transition-transform duration-300 hover:scale-105"
+        >
+          <LogOut size={20} />
+          {!collapsed && <span>Exit</span>}
+        </button>
       </div>
-    </div>
+    </aside>
   );
 };
 

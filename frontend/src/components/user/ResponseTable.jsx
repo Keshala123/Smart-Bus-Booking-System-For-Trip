@@ -28,9 +28,10 @@ const UserBookings = () => {
   if (loading)
     return (
       <div className="flex justify-center items-center h-32">
-        <p className="text-gray-600 text-lg">Loading bookings...</p>
+        <p className="text-gray-600 text-lg animate-pulse">Loading bookings...</p>
       </div>
     );
+
   if (error)
     return (
       <div className="flex justify-center items-center h-32">
@@ -39,64 +40,67 @@ const UserBookings = () => {
     );
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h2 className="text-3xl font-semibold text-center mb-8 text-gray-800">
+    <section className="max-w-3xl mx-auto p-6">
+      <h2 className="text-4xl font-extrabold text-center mb-10 text-indigo-800 drop-shadow-md">
         My Bookings
       </h2>
+
       {bookings.length === 0 ? (
-        <p className="text-center text-gray-500 text-lg">No bookings found.</p>
+        <p className="text-center text-gray-500 text-lg italic">No bookings found.</p>
       ) : (
         <div className="space-y-6">
           {bookings.map((booking) => (
-            <div
+            <article
               key={booking._id}
-              className="bg-white shadow-md rounded-lg p-6 border border-gray-200"
+              className="bg-white shadow-xl rounded-3xl p-6 border border-indigo-200 hover:shadow-2xl transition-shadow duration-300 cursor-pointer"
+              tabIndex={0}
+              aria-label={`Booking from ${booking.from} to ${booking.to} on ${booking.date}`}
             >
-              <div className="grid grid-cols-2 gap-4 text-gray-700">
+              <div className="grid grid-cols-2 gap-6 text-indigo-900 font-semibold">
                 <div>
-                  <p className="font-semibold">Trip:</p>
+                  <p className="text-sm font-bold text-indigo-700">Trip</p>
                   <p>{booking.type}</p>
                 </div>
                 <div>
-                  <p className="font-semibold">Date:</p>
+                  <p className="text-sm font-bold text-indigo-700">Date</p>
                   <p>{booking.date}</p>
                 </div>
                 <div>
-                  <p className="font-semibold">From:</p>
+                  <p className="text-sm font-bold text-indigo-700">From</p>
                   <p>{booking.from}</p>
                 </div>
                 <div>
-                  <p className="font-semibold">To:</p>
+                  <p className="text-sm font-bold text-indigo-700">To</p>
                   <p>{booking.to}</p>
                 </div>
                 <div>
-                  <p className="font-semibold">Name:</p>
+                  <p className="text-sm font-bold text-indigo-700">Name</p>
                   <p>{booking.name}</p>
                 </div>
                 <div>
-                  <p className="font-semibold">Phone:</p>
+                  <p className="text-sm font-bold text-indigo-700">Phone</p>
                   <p>{booking.number}</p>
                 </div>
                 <div className="col-span-2 mt-4">
-                  <p className="font-semibold inline-block mr-2">Status:</p>
+                  <p className="inline-block font-bold mr-3 text-indigo-700">Status:</p>
                   <span
-                    className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                    className={`inline-block px-4 py-1 rounded-full text-xs font-semibold select-none ${
                       booking.status === "Accepted"
-                        ? "bg-green-100 text-green-800"
+                        ? "bg-green-200 text-green-900"
                         : booking.status === "Waiting"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-red-100 text-red-800"
+                        ? "bg-yellow-200 text-yellow-900"
+                        : "bg-red-200 text-red-900"
                     }`}
                   >
                     {booking.status}
                   </span>
                 </div>
               </div>
-            </div>
+            </article>
           ))}
         </div>
       )}
-    </div>
+    </section>
   );
 };
 

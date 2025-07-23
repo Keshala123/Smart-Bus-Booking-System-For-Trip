@@ -4,20 +4,21 @@ import BookingForm from "../../components/user/BookingForm";
 
 const BookingPage = () => {
   return (
-    <div className="flex">
+    <div className="flex min-h-screen bg-blue-50">
       <Sidebar />
-      <div className="flex-1 bg-blue-50 min-h-screen p-6">
-        <div className="text-center text-xl font-semibold text-gray-800 mb-6">
-          Booking
-        </div>
-        <div className="bg-white rounded-lg shadow-md p-8">
-          <p className="text-gray-600 text-center">Welcome to Booking Page!</p>
-        </div>
-        <div className="m-8">
+
+      <main className="flex-1 p-8">
+        <header className="mb-8">
+          <h1 className="text-3xl font-extrabold text-gray-900 text-center select-none">
+            Booking
+          </h1>
+          
+        </header>
+
+        <section className="mt-6 bg-white rounded-3xl shadow-2xl p-8 max-w-4xl mx-auto">
           <BookingForm />
-        </div>
-        
-      </div>
+        </section>
+      </main>
     </div>
   );
 };
